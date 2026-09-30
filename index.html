@@ -7,7 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>window.GG_CONFIG={SUPABASE_URL:"YOUR_SUPABASE_URL",SUPABASE_KEY:"YOUR_PUBLISHABLE_KEY"};</script>
+<script>
+/* ===== SUPABASE CONFIG (publishable key only; never put a service_role/secret key here) ===== */
+const SUPABASE_URL = "https://oxounbssaylgptmvxqvb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cHxk4WmCgyBx94FM6m_eVg_PQhlts1-";
+window.GG_CONFIG={SUPABASE_URL,SUPABASE_KEY:SUPABASE_PUBLISHABLE_KEY};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -573,12 +578,17 @@ kbd.ek{display:inline-block;min-width:20px;padding:0 6px;margin-right:3px;border
 #ggAuth h2{margin:0 0 4px;text-align:center;color:var(--gold);font-size:26px}
 #ggAuth input{font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:2px solid var(--panel-edge);background:#1a120c;color:#fff}
 #ggAuth .ggr{display:flex;gap:8px}
-#ggAuth button,#ggOut,#ggSkin{font:inherit;font-weight:800;cursor:pointer}
+#ggAuth button,#ggOut,#ggLeave,#ggSkin,#ggOnline{font:inherit;font-weight:800;cursor:pointer}
 #ggAuth button{flex:1;padding:11px;border-radius:12px;border:3px solid #B9861A;background:linear-gradient(180deg,#FFE29A,var(--gold));color:#5a3d05;font-size:16px}
 #ggMsg{min-height:18px;font-size:13px;color:#ffb4a8;text-align:center}
 #ggBar{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:4;display:none;align-items:center;gap:8px;background:rgba(20,15,10,.6);color:#fff;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
-#ggOut{border:0;border-radius:999px;padding:3px 10px;background:#E3453F;color:#fff;font-size:12px}
-#ggSkin{position:fixed;left:10px;bottom:150px;z-index:5;font-size:18px}
+#ggOut,#ggLeave{border:0;border-radius:999px;padding:3px 10px;background:#E3453F;color:#fff;font-size:12px}
+#ggSkin{position:fixed;left:10px;bottom:150px;z-index:5;font-size:18px;display:none}
+#ggS1,#ggS2{display:flex;flex-direction:column;gap:10px}
+#ggAuth .ggl{background:transparent;color:#ccc;border:0;font-size:13px;text-decoration:underline;flex:none}
+#ggCode{flex:1;min-width:0;text-transform:uppercase;letter-spacing:3px;text-align:center}
+#ggWho{text-align:center;color:var(--gold);font-weight:700}
+#ggOnline{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:55;display:none;padding:10px 16px;border-radius:14px;border:3px solid #B9861A;background:linear-gradient(180deg,#FFE29A,var(--gold));color:#5a3d05;font-size:16px}
 </style>
 </head>
 <body class="intro">
@@ -4091,7 +4101,7 @@ const PETS={
 'Celestial Dragon':{r:'Mythic',c:0x5a6cff,b:0xbfe4ff,a:0xffe9a0,s:1.35,ears:'horns',tail:'long',wings:'bat',snout:1,glow:.9,mv:'fly',ab:[['grow',12],['sell',8],['heavy',10]]},
 'Crystal Kitsune':{r:'Mythic',c:0xcfeaff,b:0xffffff,a:0xff7ad9,s:1.1,ears:'point',tail:'fluffy3',snout:1,glow:.9,mv:'run',ab:[['luck',15],['mut',8]]},
 'Rainbow Phoenix':{r:'Mythic',c:0xff5ca8,b:0x6cf0ff,a:0xfff06a,s:1.25,ears:'crest',tail:'fan',wings:'bird',beak:1,glow:1,rainbow:1,mv:'fly',ab:[['grow',10],['sell',10],['luck',10],['bonus',8]]}};
-const ABN={grow:'Tree growth speed',sell:'Sell value',luck:'River seed luck',mut:'Mutation chance',heavy:'Fruit weight',bonus:'Bonus fruit chance'};
+const ABN={grow:'Tree growth speed',sell:'Sell value',luck:'Seed Finder',mut:'Mutation chance',heavy:'Fruit weight',bonus:'Bonus fruit chance'};
 // ---------- pet sizes (rolled on hatch; bigger = stronger abilities) ----------
 const SIZES=[
  {id:'normal',name:'Normal',chance:72,scale:1,boost:1,color:'#b9b19f'},
@@ -4117,7 +4127,7 @@ function bonus(k){ let v=0; ST.equipped.forEach(key=>{ const q=ssplit(key), n=q[
 const _tg=treeGrowMult; treeGrowMult=function(t){ return _tg(t)*(1+bonus('grow')); };
 const _fu=fruitUnitValue; fruitUnitValue=function(){ return Math.max(1,Math.round(_fu.apply(this,arguments)*(1+bonus('sell')))); };
 const _ft=finalTreeValue; finalTreeValue=function(){ return Math.round(_ft.apply(this,arguments)*(1+bonus('sell'))); };
-const _ps=pickSeedIdx; pickSeedIdx=function(){ let a=_ps(); if(Math.random()<bonus('luck')){ const b=_ps(); if(RARITY_ORDER.indexOf(SEEDS[b].rarity)>RARITY_ORDER.indexOf(SEEDS[a].rarity)) a=b; } return a; };
+const _ps=pickSeedIdx; pickSeedIdx=function(){ let a=_ps(); if(false){ const b=_ps(); if(RARITY_ORDER.indexOf(SEEDS[b].rarity)>RARITY_ORDER.indexOf(SEEDS[a].rarity)) a=b; } return a; };
 if(typeof rollMut==='function'){ const _rm=rollMut; rollMut=function(){ let r=_rm.apply(this,arguments); if(!r&&Math.random()<bonus('mut')*0.3) r=_rm.apply(this,arguments); return r; }; }
 const _fw=fruitWeightKg; fruitWeightKg=function(){ const w=_fw.apply(this,arguments); return typeof w==='number'?+(w*(1+bonus('heavy'))).toFixed(2):w; };
 let _inCol=false; const _cp=collectPlacedFruit; collectPlacedFruit=function(){ _inCol=true; try{ return _cp.apply(this,arguments); } finally{ _inCol=false; } };
@@ -4380,7 +4390,7 @@ let _lt=0; function updatePets(now){ const dt=Math.min(.05,Math.max(.001,now-_lt
    f.g.position.set(f.x,y,f.z); f.g.rotation.y=f.ry;
    if(P.glow&&Math.random()<.08*P.glow) spawnBurst(new THREE.Vector3(f.x,y+.6*sc,f.z),P.rainbow?new THREE.Color().setHSL(Math.random(),.9,.6).getHex():P.a,1,.4,.8); }); }
 // ---------- pet info panel ----------
-const ABD={grow:'Trees grow faster',sell:'Fruit and trees sell for more',luck:'Better seeds from the river',mut:'Higher chance of tree mutations',heavy:'Fruit comes out heavier',bonus:'Chance of an extra fruit when collecting'};
+const ABD={grow:'Trees grow faster',sell:'Fruit and trees sell for more',luck:'Chance to find a free extra seed when you grab one',mut:'Higher chance of tree mutations',heavy:'Fruit comes out heavier',bonus:'Chance of an extra fruit when collecting'};
 function openPetInfo(key){ if(!key) return; const q=ssplit(key), n=q[0], t=q[1], P=PETS[n]; if(!P) return; view='petinfo'; window.__piKey=key; renderPetInfo(); openPanel(); sfx('pick'); }
 function renderPetInfo(){ if(view!=='petinfo') return; const key=window.__piKey, q=ssplit(key), n=q[0], t=q[1], P=PETS[n], z=SIZES[t], col=RC[P.r], on=ST.equipped.includes(key);
   const rows=P.ab.map(a=>`<div class="piRow" style="--rc:${col}"><div class="piV">+${fmtN(a[1]*z.boost)}%</div><div><div class="piN">${ABN[a[0]]}</div><div class="piD">${ABD[a[0]]}${t?` <span style="color:${z.color}">(base +${a[1]}% ×${z.boost})</span>`:''}</div></div></div>`).join('');
@@ -4404,23 +4414,35 @@ window.GG_PETS={ST,EGGS,PETS,SIZES,bonus,hatch,placed};
 
 </script>
 
-<div id="ggAuth"><div class="ggc"><h2>Greedy Growers</h2>
-<input id="ggU" placeholder="Username" maxlength="16" autocomplete="username">
+<div id="ggAuth" style="display:none"><div class="ggc"><h2>Play Online</h2>
+<div id="ggS1"><input id="ggU" placeholder="Username" maxlength="16" autocomplete="username">
 <input id="ggP" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
 <div class="ggr"><button id="ggLogin">Log in</button><button id="ggSign">Sign up</button></div>
+<button class="ggl" id="ggBack">Back to menu</button></div>
+<div id="ggS2" style="display:none"><div id="ggWho"></div>
+<button id="ggCreate">Create party</button>
+<div class="ggr"><input id="ggCode" placeholder="PARTY CODE" maxlength="6" autocomplete="off"><button id="ggJoin">Join</button></div>
+<button class="ggl" id="ggOff">Play offline instead</button></div>
 <div id="ggMsg"></div></div></div>
-<div id="ggBar"><span id="ggInfo"></span><button id="ggOut">Log out</button></div>
+<div id="ggBar"><span id="ggInfo"></span><button id="ggLeave">Leave party</button><button id="ggOut">Log out</button></div>
 <button class="roundbtn" id="ggSkin" title="Change skin">&#127912;</button>
+<button id="ggOnline">&#127760; Play Online</button>
 <script>
 (function(){
 const C=window.GG_CONFIG||{}, $=id=>document.getElementById(id), msg=t=>{$('ggMsg').textContent=t||'';};
 ['keydown','keyup'].forEach(ev=>$('ggAuth').addEventListener(ev,e=>e.stopPropagation()));
-if(!window.supabase||!C.SUPABASE_URL||/YOUR_/.test(C.SUPABASE_URL+C.SUPABASE_KEY)){ msg('Set SUPABASE_URL and SUPABASE_KEY in GG_CONFIG (top of the file).'); return; }
+{ const _bs=window.buySeed; window.buySeed=function(m){ const c=coins; _bs.apply(this,arguments);   // pet ability 'luck' is now Seed Finder
+  try{ const q=GG_PETS.bonus('luck'); if(coins<c&&q>0&&Math.random()<q){ const i=m.userData.seedIdx, s=SEEDS[i];
+    if(addItem({type:'seed',seedIdx:i,name:s.name,rarity:s.rarity})>=0){ updateHotbar(); showToast('{{sparkle}} Seed Finder: free extra seed!'); } } }catch(e){} }; }
+if(!window.supabase||!C.SUPABASE_URL||/YOUR_/.test(C.SUPABASE_URL+C.SUPABASE_KEY)) return;   // offline-only if Supabase can't load
 const sb=supabase.createClient(C.SUPABASE_URL,C.SUPABASE_KEY);
 const SKINS=['#3EAE3F','#E3453F','#42A5F5','#FFB300','#AB47BC','#26C6DA','#EC407A','#8D6E63'];
 let mEp=-1,off=0,t0=0,W=0,inSlot=false,synced=false,world=false,lastSlot=0;
 let me=null,ver=0,skin=0,room=null,plotIdx=0,ch=null,joined=false,saving=false,dead=false,restoring=false,tm=0;
-const R={}, peers={};
+const R={}, peers={}, KEYS=['gg_quests_v1','gg_pets_v1','gg_meta_v1','gg_wheel_next'];
+function toOffline(){   // restore the player's offline data and clear online flags
+  KEYS.forEach(k=>{ const b=localStorage.getItem('gg_off:'+k); if(b!==null) localStorage.setItem(k,b); else localStorage.removeItem(k); localStorage.removeItem('gg_off:'+k); });
+  ['gg_owner','gg_offbak','gg_mode'].forEach(k=>localStorage.removeItem(k)); }
 
 // ---------- auth ----------
 async function auth(signup){
@@ -4439,11 +4461,12 @@ async function auth(signup){
 }
 $('ggLogin').onclick=()=>auth(false); $('ggSign').onclick=()=>auth(true);
 $('ggP').addEventListener('keydown',e=>{ if(e.key==='Enter') auth(false); });
-$('ggOut').onclick=async()=>{ await save(); try{ await sb.rpc('leave_room'); }catch(e){} await sb.auth.signOut(); ['gg_quests_v1','gg_pets_v1','gg_meta_v1','gg_wheel_next','gg_owner'].forEach(k=>localStorage.removeItem(k)); location.reload(); };
+$('ggOut').onclick=async()=>{ await save(); try{ await sb.rpc('leave_room'); }catch(e){} await sb.auth.signOut(); toOffline(); location.reload(); };
 
 // ---------- save / load ----------
 function hydrate(s){   // quests, pets, rebirth and wheel already read localStorage at startup, so seed it then reload once
   const put=(k,v)=>{ if(v&&(typeof v!=='object'||Object.keys(v).length)) localStorage.setItem(k,JSON.stringify(v)); else localStorage.removeItem(k); };
+  if(!localStorage.getItem('gg_owner')&&!localStorage.getItem('gg_offbak')){ KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!==null) localStorage.setItem('gg_off:'+k,v); }); localStorage.setItem('gg_offbak','1'); }   // keep offline progress safe
   put('gg_quests_v1',s.quests); put('gg_pets_v1',s.pets); put('gg_meta_v1',s.meta); put('gg_wheel_next',s.wheel_next_at||0);
 }
 function apply(s){
@@ -4515,8 +4538,8 @@ async function roster(){
 })();
 
 // ---------- room + realtime ----------
-async function join(){
-  const r=await sb.rpc('join_room',{}); if(r.error) return msg(r.error.message);
+async function join(args){
+  const r=await sb.rpc('join_room',args||{}); if(r.error) return r.error.message;
   const j=r.data; off=j.server_now_ms-Date.now(); t0=j.room_started_ms; W=j.world_seed; startWorld(); room=j.room_id; plotIdx=j.plot_index; (j.players||[]).forEach(p=>R[p.user_id]=p);
   await sb.realtime.setAuth();
   ch=sb.channel('room:'+room,{config:{private:true,broadcast:{self:false},presence:{key:me}}});
@@ -4525,9 +4548,9 @@ async function join(){
     .on('broadcast',{event:'skin'},()=>roster())
     .on('presence',{event:'join'},()=>roster())
     .on('presence',{event:'leave'},({key})=>drop(key))
-    .on('presence',{event:'sync'},()=>{ $('ggInfo').textContent='Plot '+(plotIdx+1)+' \u00b7 Room '+j.code+' \u00b7 '+Object.keys(ch.presenceState()).length+'/4 players'; })
+    .on('presence',{event:'sync'},()=>{ $('ggInfo').textContent='Plot '+(plotIdx+1)+' \u00b7 Party '+j.code+' \u00b7 '+Object.keys(ch.presenceState()).length+'/4 players'; })
     .subscribe(st=>{ if(st==='SUBSCRIBED'){ ch.track({u:me}); joined=true; } });
-  $('ggBar').style.display='flex'; showToast('Room '+j.code+': you are on Plot '+(plotIdx+1));
+  $('ggBar').style.display='flex'; $('ggSkin').style.display='flex'; $('ggInfo').textContent='Party '+j.code; showToast('Party code '+j.code+' \u2014 share it! You are on Plot '+(plotIdx+1)); return null;
 }
 let last='',idle=0;
 setInterval(()=>{ if(!joined) return;
@@ -4585,15 +4608,29 @@ function startWorld(){
 
 // ---------- start ----------
 async function enter(){
-  const {data:{session}}=await sb.auth.getSession(); if(!session) return; me=session.user.id;
+  const {data:{session}}=await sb.auth.getSession(); if(!session) return; me=session.user.id; localStorage.setItem('gg_mode','online');
   const [sv,pr]=await Promise.all([sb.from('player_saves').select('*').eq('user_id',me).single(),sb.from('profiles').select('username,skin_id').eq('id',me).single()]);
   if(sv.error||pr.error) return msg((sv.error||pr.error).message);
   const s=sv.data; ver=s.version; skin=pr.data.skin_id; $('ggSkin').style.background=SKINS[skin];
   if(localStorage.getItem('gg_owner')!==me+':'+ver){ hydrate(s); localStorage.setItem('gg_owner',me+':'+ver); location.reload(); return; }
   if(ver>0) TUT.done=true;   // returning players skip the tutorial
-  apply(s); await join(); $('ggAuth').style.display='none';
+  apply(s); $('ggWho').textContent='Signed in as '+pr.data.username;
+  const err=await join({});   // reconnect to an existing seat, otherwise ask for a party
+  if(err&&/no_room/.test(err)){ openAuth(2); return; }
+  if(err){ openAuth(2); msg(err); return; }
+  $('ggAuth').style.display='none';
 }
-sb.auth.getSession().then(({data})=>{ if(data.session) enter(); });
+const openAuth=step=>{ $('ggS1').style.display=step===1?'flex':'none'; $('ggS2').style.display=step===2?'flex':'none'; $('ggAuth').style.display='flex'; msg(''); };
+async function party(a){ msg('Joining...'); const e=await join(a);
+  if(e) return msg(e==='room_full'?'That party is full (4/4)':e==='room_not_found'?'No party with that code':e); $('ggAuth').style.display='none'; }
+$('ggCreate').onclick=()=>party({p_create:true});
+$('ggJoin').onclick=()=>{ const c=$('ggCode').value.trim().toUpperCase(); if(!/^[A-Z0-9]{6}$/.test(c)) return msg('Enter the 6-character party code'); party({p_code:c}); };
+$('ggBack').onclick=()=>{ $('ggAuth').style.display='none'; localStorage.removeItem('gg_mode'); };
+$('ggOff').onclick=()=>{ toOffline(); location.reload(); };
+$('ggLeave').onclick=async()=>{ await save(); try{ await sb.rpc('leave_room'); }catch(e){} toOffline(); location.reload(); };
+$('ggOnline').onclick=async()=>{ localStorage.setItem('gg_mode','online'); const {data}=await sb.auth.getSession(); if(data.session) enter(); else openAuth(1); };
+setInterval(()=>{ $('ggOnline').style.display=(titleOpen&&!me&&$('ggAuth').style.display==='none')?'block':'none'; },300);
+sb.auth.getSession().then(({data})=>{ if(localStorage.getItem('gg_mode')==='online'){ if(data.session) enter(); else localStorage.removeItem('gg_mode'); } });
 })();
 </script>
 </body>
